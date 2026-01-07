@@ -15,7 +15,9 @@ function testSecurityHeaders(allowIframe, frameAncestors) {
         headers["Content-Security-Policy"] = `frame-ancestors ${frameAncestors}`;
     } else if (allowIframe) {
         // Allow all iframes if ALLOW_IFRAME is true but no specific ancestors defined
-        headers["X-Frame-Options"] = "ALLOWALL";
+        // Note: When CSP is supported, omitting X-Frame-Options effectively allows framing
+        // We set a permissive CSP instead
+        headers["Content-Security-Policy"] = "frame-ancestors *";
     } else {
         // Default: deny all iframe embedding
         headers["X-Frame-Options"] = "DENY";
@@ -58,7 +60,7 @@ const testCases = [
         allowIframe: true,
         frameAncestors: undefined,
         expectedHeaders: {
-            "X-Frame-Options": "ALLOWALL"
+            "Content-Security-Policy": "frame-ancestors *"
         }
     },
     {

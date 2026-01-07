@@ -53,7 +53,13 @@ When `ALLOW_IFRAME=true` and `FRAME_ANCESTORS` is set, Cap automatically adds a 
 Content-Security-Policy: frame-ancestors https://web.telegram.org https://telegram.org
 ```
 
-This is more secure than the older `X-Frame-Options` header as it provides fine-grained control over which origins can embed your application.
+When `ALLOW_IFRAME=true` but `FRAME_ANCESTORS` is not set, Cap allows all origins:
+
+```
+Content-Security-Policy: frame-ancestors *
+```
+
+This is more secure and flexible than the older `X-Frame-Options` header as it provides fine-grained control over which origins can embed your application.
 
 ### X-Frame-Options
 
