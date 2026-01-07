@@ -4,6 +4,37 @@
 
 You can change the default CORS settings for redeeming and generating challenges by setting the `CORS_ORIGIN` environment variable when running the server. This defaults to `*`, which allows all origins. You can add multiple origins by separating them with commas, like `domain1.tld,domain2.tld,...`.
 
+## Iframe Support
+
+By default, Cap Standalone blocks iframe embedding for security. To enable iframe support (e.g., for Telegram mini webapps), configure these environment variables:
+
+### `ALLOW_IFRAME`
+
+Set to `true` to enable iframe embedding:
+
+```bash
+ALLOW_IFRAME=true
+```
+
+### `FRAME_ANCESTORS`
+
+Specify allowed parent origins (space-separated) using Content-Security-Policy:
+
+```bash
+# For Telegram mini webapps
+FRAME_ANCESTORS=https://web.telegram.org https://telegram.org
+
+# For development (allow all origins - not recommended for production)
+FRAME_ANCESTORS=*
+
+# For same-origin only
+FRAME_ANCESTORS='self'
+```
+
+When both `ALLOW_IFRAME=true` and `FRAME_ANCESTORS` are set, Cap uses the more secure Content-Security-Policy `frame-ancestors` directive instead of the legacy `X-Frame-Options` header.
+
+See the [Iframe Support Guide](../iframe-support.md) for detailed integration instructions.
+
 ## Asset server
 
 The asset server is disabled by default. You can enable it by setting the `ENABLE_ASSETS_SERVER` environment variable to `true`. This will serve the assets from the `/assets` endpoint.

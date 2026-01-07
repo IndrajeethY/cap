@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Mini Webapp - Cap Integration Example</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .telegram-app {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 480px;
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        .app-header {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .app-header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .app-header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .app-content {
+            padding: 30px 20px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .section p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .captcha-container {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 12px;
+            padding: 30px 20px;
+            text-align: center;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        .captcha-label {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .form-section {
+            margin-top: 30px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #2196F3;
+        }
+        
+        .submit-button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+        }
+        
+        .submit-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status-message {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status-message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .telegram-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        
+        .telegram-badge svg {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .info-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-left: 4px solid #ffc107;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #856404;
+        }
+        
+        .info-box strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="telegram-app">
+        <div class="app-header">
+            <h1>🤖 Telegram Mini App</h1>
+            <p>Secure Form with Cap Protection</p>
+            <div class="telegram-badge">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+                Running in Telegram
+            </div>
+        </div>
+        
+        <div class="app-content">
+            <div class="info-box">
+                <strong>ℹ️ Example Integration</strong>
+                This demonstrates Cap working in a Telegram mini webapp context. The CAPTCHA widget is embedded and fully functional within the Telegram iframe environment.
+            </div>
+            
+            <div class="section">
+                <h2>Complete Human Verification</h2>
+                <p>Before submitting your information, please verify you're human by completing the Cap challenge below:</p>
+                
+                <div class="captcha-container">
+                    <div class="captcha-label">🔒 Human Verification Required</div>
+                    <cap-widget data-cap-api-endpoint="/api/"></cap-widget>
+                </div>
+            </div>
+            
+            <form id="telegram-form" class="form-section">
+                <div class="input-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" placeholder="Enter your username" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                </div>
+                
+                <button type="submit" class="submit-button" id="submit-btn" disabled>
+                    🔒 Complete verification first
+                </button>
+                
+                <div id="status" style="display: none;"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Cap Widget Mock Implementation -->
+    <script>
+        // Simulate the Telegram Web App environment
+        window.Telegram = {
+            WebApp: {
+                ready: function() {
+                    console.log('Telegram WebApp initialized');
+                },
+                MainButton: {
+                    text: 'Submit',
+                    show: function() {},
+                    hide: function() {},
+                    onClick: function(callback) {}
+                }
+            }
+        };
+        
+        // Mock Cap Custom Fetch for demo
+        window.CAP_CUSTOM_FETCH = async (url, options) => {
+            console.log('Cap API call:', url);
+            
+            if (url.includes('/challenge')) {
+                await new Promise(resolve => setTimeout(resolve, 500));
+                const generateRandomHex = (length) => {
+                    return Array.from(
+                        window.crypto.getRandomValues(new Uint8Array(Math.ceil(length / 2)))
+                    )
+                        .map((byte) => byte.toString(16).padStart(2, '0'))
+                        .join('')
+                        .slice(0, length);
+                };
+
+                return new Response(
+                    JSON.stringify({
+                        challenge: Array.from({ length: 5 }, () => [
+                            generateRandomHex(32),
+                            generateRandomHex(4),
+                        ]),
+                        token: 'demo-token-' + Date.now(),
+                        expires: Date.now() + 60000,
+                    }),
+                    {
+                        status: 200,
+                        headers: { 'Content-Type': 'application/json' },
+                    }
+                );
+            }
+            
+            if (url.includes('/redeem')) {
+                await new Promise(resolve => setTimeout(resolve, 800));
+                return new Response(
+                    JSON.stringify({
+                        success: true,
+                        token: 'verified-' + Date.now(),
+                        expires: Date.now() + 60000,
+                    }),
+                    {
+                        status: 200,
+                        headers: { 'Content-Type': 'application/json' },
+                    }
+                );
+            }
+            
+            return await window.fetch(url, options);
+        };
+    </script>
+    
+    <!-- Load Cap Widget from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@cap.js/widget@latest"></script>
+    
+    <script>
+        // Initialize Telegram WebApp
+        if (window.Telegram?.WebApp) {
+            window.Telegram.WebApp.ready();
+        }
+        
+        const widget = document.querySelector('cap-widget');
+        const submitBtn = document.getElementById('submit-btn');
+        const form = document.getElementById('telegram-form');
+        const statusDiv = document.getElementById('status');
+        
+        let isVerified = false;
+        
+        // Listen to Cap widget events
+        widget.addEventListener('solve', (e) => {
+            console.log('✅ Verification successful!', e.detail.token);
+            isVerified = true;
+            submitBtn.disabled = false;
+            submitBtn.textContent = '✅ Submit Form';
+            submitBtn.style.background = 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)';
+            
+            showStatus('Verification successful! You can now submit the form.', 'success');
+        });
+        
+        widget.addEventListener('error', (e) => {
+            console.error('❌ Verification failed:', e.detail.message);
+            showStatus('Verification failed. Please try again.', 'error');
+        });
+        
+        widget.addEventListener('progress', (e) => {
+            console.log('⏳ Verification progress:', e.detail.progress + '%');
+            submitBtn.textContent = `⏳ Verifying... ${e.detail.progress}%`;
+        });
+        
+        // Handle form submission
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            if (!isVerified) {
+                showStatus('Please complete the human verification first.', 'error');
+                return;
+            }
+            
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData);
+            
+            console.log('Form submitted:', data);
+            showStatus('Form submitted successfully! In production, this would send data to your backend.', 'success');
+            
+            // Simulate Telegram WebApp closing or navigation
+            setTimeout(() => {
+                showStatus('In a real Telegram mini app, this would close the app or navigate to the next screen.', 'info');
+            }, 2000);
+        });
+        
+        function showStatus(message, type) {
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message ${type}`;
+            statusDiv.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>
