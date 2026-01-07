@@ -36,7 +36,7 @@ CORS_ORIGIN=https://web.telegram.org,https://telegram.org
 - **Special values:**
   - `'self'` - Only allow same-origin embedding
   - `*` - Allow any origin (not recommended for production)
-  - Empty - When `ALLOW_IFRAME=true` but no ancestors specified, sets X-Frame-Options to ALLOWALL
+  - Empty - When `ALLOW_IFRAME=true` but no ancestors specified, defaults to `frame-ancestors *`
 
 #### `CORS_ORIGIN`
 - **Type:** String (comma-separated URLs)
