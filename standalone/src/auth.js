@@ -75,7 +75,22 @@ export const authBeforeHandle = async ({ set, headers }) => {
   const { authorization } = headers;
 
   set.headers["X-Content-Type-Options"] = "nosniff";
-  set.headers["X-Frame-Options"] = "DENY";
+  
+  // Configure iframe support based on environment variable
+  const allowIframe = process.env.ALLOW_IFRAME === "true";
+  const frameAncestors = process.env.FRAME_ANCESTORS;
+  
+  if (allowIframe && frameAncestors) {
+    // Use CSP frame-ancestors for more granular control
+    set.headers["Content-Security-Policy"] = `frame-ancestors ${frameAncestors}`;
+  } else if (allowIframe) {
+    // Allow all iframes if ALLOW_IFRAME is true but no specific ancestors defined
+    set.headers["X-Frame-Options"] = "ALLOWALL";
+  } else {
+    // Default: deny all iframe embedding
+    set.headers["X-Frame-Options"] = "DENY";
+  }
+  
   set.headers["X-XSS-Protection"] = "1; mode=block";
 
   if (authorization?.startsWith("Bot ")) {

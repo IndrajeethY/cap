@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cap Widget - Iframe Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .description {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .widget-container {
+            padding: 20px;
+            background: #fafafa;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .config-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 6px;
+        }
+        .config-section h3 {
+            margin-top: 0;
+            color: #555;
+        }
+        .config-section code {
+            display: block;
+            background: #333;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .note strong {
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧢 Cap Widget - Iframe Test</h1>
+        <p class="description">
+            This page demonstrates the Cap CAPTCHA widget working in a standalone context.
+            It simulates how the widget would work when embedded in an iframe, such as in a Telegram mini webapp.
+        </p>
+
+        <div class="config-section">
+            <h3>📝 Configuration Required</h3>
+            <p>To enable iframe support in your Cap standalone server, set these environment variables:</p>
+            <code>ALLOW_IFRAME=true
+FRAME_ANCESTORS=https://web.telegram.org https://telegram.org
+CORS_ORIGIN=https://web.telegram.org,https://telegram.org</code>
+            <p style="margin-top: 10px; color: #666; font-size: 14px;">
+                For local testing, you can use '*' for FRAME_ANCESTORS to allow all origins.
+            </p>
+        </div>
+
+        <div class="note">
+            <strong>Note:</strong> This test page uses a custom fetch function to simulate the Cap challenge/redeem flow.
+            In production, make sure your Cap server is properly configured with the correct site key.
+        </div>
+
+        <div class="widget-container">
+            <h2>Cap Widget Demo</h2>
+            <cap-widget data-cap-api-endpoint="/api/"></cap-widget>
+            <p id="status" style="margin-top: 20px; color: #666;">Click the widget to start verification</p>
+        </div>
+
+        <div class="config-section" style="margin-top: 30px;">
+            <h3>🔧 Integration Example</h3>
+            <p>To integrate Cap in your webpage or Telegram mini app:</p>
+            <code>&lt;script src="https://your-cap-server.com/assets/widget.js"&gt;&lt;/script&gt;
+&lt;cap-widget data-cap-api-endpoint="https://your-cap-server.com/YOUR-SITE-KEY/"&gt;&lt;/cap-widget&gt;</code>
+        </div>
+    </div>
+
+    <!-- Custom fetch for demo purposes -->
+    <script>
+        window.CAP_CUSTOM_FETCH = async (url, options) => {
+            if (url.includes('/challenge')) {
+                // Generate fake challenge data
+                const generateRandomHex = (length) => {
+                    return Array.from(
+                        window.crypto.getRandomValues(new Uint8Array(Math.ceil(length / 2)))
+                    )
+                        .map((byte) => byte.toString(16).padStart(2, '0'))
+                        .join('')
+                        .slice(0, length);
+                };
+
+                return new Response(
+                    JSON.stringify({
+                        challenge: Array.from({ length: 5 }, () => [
+                            generateRandomHex(32),
+                            generateRandomHex(4),
+                        ]),
+                        token: 'demo-token-' + Date.now(),
+                        expires: Date.now() + 60000,
+                    }),
+                    {
+                        status: 200,
+                        headers: { 'Content-Type': 'application/json' },
+                    }
+                );
+            }
+            
+            if (url.includes('/redeem')) {
+                return new Response(
+                    JSON.stringify({
+                        success: true,
+                        token: 'verified-token-' + Date.now(),
+                        expires: Date.now() + 60000,
+                    }),
+                    {
+                        status: 200,
+                        headers: { 'Content-Type': 'application/json' },
+                    }
+                );
+            }
+            
+            return await window.fetch(url, options);
+        };
+    </script>
+    
+    <!-- Load the Cap widget -->
+    <script src="https://cdn.jsdelivr.net/npm/@cap.js/widget@latest"></script>
+    
+    <script>
+        const widget = document.querySelector('cap-widget');
+        const statusEl = document.getElementById('status');
+        
+        widget.addEventListener('solve', (e) => {
+            statusEl.textContent = '✅ Verification successful! Token: ' + e.detail.token.substring(0, 20) + '...';
+            statusEl.style.color = '#28a745';
+        });
+        
+        widget.addEventListener('error', (e) => {
+            statusEl.textContent = '❌ Verification failed: ' + e.detail.message;
+            statusEl.style.color = '#dc3545';
+        });
+        
+        widget.addEventListener('progress', (e) => {
+            statusEl.textContent = '⏳ Verifying... ' + e.detail.progress + '%';
+            statusEl.style.color = '#007bff';
+        });
+    </script>
+</body>
+</html>
